@@ -93,6 +93,15 @@ export async function GET(
 ) {
   const { asset } = await context.params;
   const camera = request.nextUrl.searchParams.get("camera");
+
+  // 如果部署在 Vercel 上，因為無法讀取本機檔案，直接重新導向到 public 資料夾內的備用檔案
+  if (process.env.VERCEL === "1") {
+    const assetInfo = ASSET_FILES[asset];
+    if (assetInfo) {
+      return NextResponse.redirect(new URL(`/analytics/${assetInfo.fileName}`, request.url));
+    }
+  }
+
   const resolved = await findAssetFile(asset, camera);
 
   if (!resolved) {
