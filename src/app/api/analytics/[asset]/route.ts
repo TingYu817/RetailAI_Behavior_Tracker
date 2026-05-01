@@ -94,11 +94,14 @@ export async function GET(
   const { asset } = await context.params;
   const camera = request.nextUrl.searchParams.get("camera");
 
-  // 如果部署在 Vercel 上，因為無法讀取本機檔案，直接重新導向到 public 資料夾內的備用檔案
+  // 如果部署在 Vercel 上，重新導向到 Supabase 雲端硬碟的公開網址
   if (process.env.VERCEL === "1") {
     const assetInfo = ASSET_FILES[asset];
     if (assetInfo) {
-      return NextResponse.redirect(new URL(`/analytics/${assetInfo.fileName}`, request.url));
+      const cameraName = camera || "camera_1";
+      const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || "https://sgqynwhduowybxyajusr.supabase.co";
+      const publicUrl = `${supabaseUrl}/storage/v1/object/public/analytics-assets/${cameraName}/${assetInfo.fileName}`;
+      return NextResponse.redirect(publicUrl);
     }
   }
 
